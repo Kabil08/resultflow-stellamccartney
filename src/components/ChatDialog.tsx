@@ -11,6 +11,8 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { Toaster } from "react-hot-toast";
+import { SmartCartDialog } from "./SmartCartDialog";
+import { AbandonCartDialog } from "./AbandonCartDialog";
 
 interface ChatDialogProps {
   isOpen: boolean;
@@ -31,6 +33,8 @@ export function ChatDialog({ isOpen, onClose }: ChatDialogProps) {
   const [currentCategory, setCurrentCategory] = useState<string | null>(null);
   const [showingCart, setShowingCart] = useState(false);
   const [menuOpen, setMenuOpen] = useState(true);
+  const [showSmartCart, setShowSmartCart] = useState(false);
+  const [showAbandonDialog, setShowAbandonDialog] = useState(false);
 
   const handleCategorySelect = (category: string) => {
     setCurrentCategory(category);
@@ -55,6 +59,49 @@ export function ChatDialog({ isOpen, onClose }: ChatDialogProps) {
     };
 
     setMessages((prev) => [...prev, userMessage, botResponse]);
+  };
+
+  const handleAddBundleToCart = () => {
+    if (selectedProducts.length > 0) {
+      setShowSmartCart(true);
+    }
+  };
+
+  const resetAllStates = () => {
+    setSelectedProducts([]);
+    setCurrentCategory(null);
+    setShowingCart(false);
+    setMenuOpen(true);
+    setShowSmartCart(false);
+    setShowAbandonDialog(false);
+    setMessages([
+      {
+        id: "1",
+        content: chatResponses.greeting,
+        sender: "bot",
+        timestamp: new Date(),
+      },
+    ]);
+  };
+
+  const handleMoveToCart = () => {
+    // Close all dialogs and the chat
+    setShowSmartCart(false);
+    setShowAbandonDialog(false);
+    onClose(); // Close the main chat dialog
+    resetAllStates(); // Reset all states to initial values
+  };
+
+  const handleSmartCartClose = () => {
+    if (selectedProducts.length > 0) {
+      setShowAbandonDialog(true);
+    } else {
+      setShowSmartCart(false);
+    }
+  };
+
+  const handleConfirmAbandon = () => {
+    resetAllStates();
   };
 
   const handleProductSelect = (productId: string) => {
@@ -114,129 +161,157 @@ export function ChatDialog({ isOpen, onClose }: ChatDialogProps) {
   ];
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[400px] sm:w-[450px] overflow-hidden p-0 flex flex-col">
-        <Toaster
-          position="bottom-center"
-          containerStyle={{
-            bottom: "20px",
-          }}
-          toastOptions={{
-            duration: 2000,
-            style: {
-              background: "#111827",
-              color: "#fff",
-              borderRadius: "9999px",
-            },
-          }}
-        />
-        <SheetHeader className="p-4 border-b shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-              <Bot className="w-5 h-5 text-gray-700" />
-            </div>
-            <div>
-              <SheetTitle className="text-[17px] font-medium">
-                Style Assistant
-              </SheetTitle>
-              <p className="text-[13px] text-gray-500">
-                Here to help you discover sustainable luxury
-              </p>
-            </div>
-          </div>
-        </SheetHeader>
+    <>
+      <Sheet
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            resetAllStates();
+          }
+          onClose();
+        }}
+      >
+        <SheetContent className="w-[400px] sm:w-[450px] overflow-hidden p-0 flex flex-col">
+          <SmartCartDialog
+            isOpen={showSmartCart}
+            onClose={() => setShowSmartCart(false)}
+            selectedProducts={selectedProducts}
+            currentCategory={currentCategory}
+            onMoveToCart={handleMoveToCart}
+            onCloseAttempt={handleSmartCartClose}
+          />
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`rounded-xl p-3 max-w-[85%] ${
-                  message.sender === "user"
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100"
-                }`}
-              >
-                {message.content.split("\n").map((line, i) => (
-                  <p
-                    key={i}
-                    className={`${i > 0 ? "mt-2" : ""} ${
-                      line.startsWith("•") ? "ml-2" : ""
-                    } text-[15px]`}
-                  >
-                    {line}
-                  </p>
-                ))}
+          <AbandonCartDialog
+            isOpen={showAbandonDialog}
+            onClose={() => setShowAbandonDialog(false)}
+            onMoveToCart={handleMoveToCart}
+            onConfirmAbandon={handleConfirmAbandon}
+            selectedProducts={selectedProducts}
+            currentCategory={currentCategory}
+          />
+          <Toaster
+            position="bottom-center"
+            containerStyle={{
+              bottom: "20px",
+            }}
+            toastOptions={{
+              duration: 2000,
+              style: {
+                background: "#111827",
+                color: "#fff",
+                borderRadius: "9999px",
+              },
+            }}
+          />
+          <SheetHeader className="p-4 border-b shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                <Bot className="w-5 h-5 text-gray-700" />
+              </div>
+              <div>
+                <SheetTitle className="text-[17px] font-medium">
+                  Style Assistant
+                </SheetTitle>
+                <p className="text-[13px] text-gray-500">
+                  Here to help you discover sustainable luxury
+                </p>
               </div>
             </div>
-          ))}
+          </SheetHeader>
 
-          {currentCategory && !showingCart && (
-            <div className="mt-4">
-              <ProductList
-                title={
-                  categories.find((c) => c.id === currentCategory)?.name || ""
-                }
-                subtitle={
-                  categories.find((c) => c.id === currentCategory)
-                    ?.description || ""
-                }
-                products={products[currentCategory as keyof typeof products]}
-                onSelect={handleProductSelect}
-                selectedProducts={selectedProducts}
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="border-t p-4 space-y-3 bg-white">
-          <Collapsible open={menuOpen} onOpenChange={setMenuOpen}>
-            <CollapsibleTrigger>Browse Collections</CollapsibleTrigger>
-            <CollapsibleContent className="space-y-2 pt-2">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategorySelect(category.id)}
-                  className="w-full text-left px-2 py-2 text-[15px] text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${
+                  message.sender === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`rounded-xl p-3 max-w-[85%] ${
+                    message.sender === "user"
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100"
+                  }`}
                 >
-                  {category.name}
-                </button>
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
+                  {message.content.split("\n").map((line, i) => (
+                    <p
+                      key={i}
+                      className={`${i > 0 ? "mt-2" : ""} ${
+                        line.startsWith("•") ? "ml-2" : ""
+                      } text-[15px]`}
+                    >
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const input = e.currentTarget.elements.namedItem(
-                "message"
-              ) as HTMLInputElement;
-              if (input.value.trim()) {
-                handleSendMessage(input.value);
-                input.value = "";
-              }
-            }}
-            className="flex items-center gap-2"
-          >
-            <input
-              type="text"
-              name="message"
-              placeholder="Type your message..."
-              className="flex-1 rounded-full border border-gray-200 px-4 py-2.5 text-[15px] focus:outline-none focus:ring-1 focus:ring-gray-400"
-            />
-            <Button
-              type="submit"
-              className="rounded-full px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-[15px]"
+            {currentCategory && !showingCart && (
+              <div className="mt-4">
+                <ProductList
+                  title={
+                    categories.find((c) => c.id === currentCategory)?.name || ""
+                  }
+                  subtitle={
+                    categories.find((c) => c.id === currentCategory)
+                      ?.description || ""
+                  }
+                  products={products[currentCategory as keyof typeof products]}
+                  onSelect={handleProductSelect}
+                  selectedProducts={selectedProducts}
+                  onAddToCart={handleAddBundleToCart}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="border-t p-4 space-y-3 bg-white">
+            <Collapsible open={menuOpen} onOpenChange={setMenuOpen}>
+              <CollapsibleTrigger>Browse Collections</CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2 pt-2">
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategorySelect(category.id)}
+                    className="w-full text-left px-2 py-2 text-[15px] text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const input = e.currentTarget.elements.namedItem(
+                  "message"
+                ) as HTMLInputElement;
+                if (input.value.trim()) {
+                  handleSendMessage(input.value);
+                  input.value = "";
+                }
+              }}
+              className="flex items-center gap-2"
             >
-              Send
-            </Button>
-          </form>
-        </div>
-      </SheetContent>
-    </Sheet>
+              <input
+                type="text"
+                name="message"
+                placeholder="Type your message..."
+                className="flex-1 rounded-full border border-gray-200 px-4 py-2.5 text-[15px] focus:outline-none focus:ring-1 focus:ring-gray-400"
+              />
+              <Button
+                type="submit"
+                className="rounded-full px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-[15px]"
+              >
+                Send
+              </Button>
+            </form>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

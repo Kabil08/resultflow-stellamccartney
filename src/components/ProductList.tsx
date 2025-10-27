@@ -1,7 +1,4 @@
 import { Check } from "lucide-react";
-import toast from "react-hot-toast";
-import Confetti from "react-confetti";
-import { useState } from "react";
 
 interface Product {
   id: string;
@@ -17,6 +14,8 @@ interface ProductListProps {
   products: Product[];
   onSelect: (productId: string) => void;
   selectedProducts: string[];
+  onAddToCart?: () => void;
+  disableSelection?: boolean;
 }
 
 export function ProductList({
@@ -25,9 +24,9 @@ export function ProductList({
   products,
   onSelect,
   selectedProducts,
+  onAddToCart,
+  disableSelection = false,
 }: ProductListProps) {
-  const [showConfetti, setShowConfetti] = useState(false);
-
   // Calculate total savings
   const totalPrice = selectedProducts.reduce(
     (total, id) => total + products.find((p) => p.id === id)!.price,
@@ -48,40 +47,13 @@ export function ProductList({
   };
 
   const handleAddToCart = () => {
-    // Show toast and confetti
-    toast.success(
-      `Added ${selectedProducts.length} item${
-        selectedProducts.length === 1 ? "" : "s"
-      } to cart!`,
-      {
-        style: {
-          background: "#111827",
-          color: "#fff",
-          borderRadius: "9999px",
-        },
-        position: "bottom-center",
-        duration: 2000,
-      }
-    );
-
-    setShowConfetti(true);
-    setTimeout(() => setShowConfetti(false), 3000);
+    if (onAddToCart) {
+      onAddToCart();
+    }
   };
 
   return (
     <div className="space-y-4">
-      {showConfetti && (
-        <div className="absolute inset-0 z-50 pointer-events-none">
-          <Confetti
-            width={window.innerWidth}
-            height={window.innerHeight}
-            recycle={false}
-            numberOfPieces={200}
-            gravity={0.3}
-          />
-        </div>
-      )}
-
       {/* Title Section */}
       <div className="mb-4">
         <h2 className="text-[17px] font-medium flex items-center gap-2 text-gray-700">
@@ -93,34 +65,38 @@ export function ProductList({
       </div>
 
       {/* Select All Products */}
-      <button onClick={handleSelectAll} className="w-full text-left">
-        <div className="px-4 py-3 rounded-xl bg-white border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div
-              className={`w-[18px] h-[18px] border rounded flex items-center justify-center ${
-                products.every((p) => selectedProducts.includes(p.id))
-                  ? "border-gray-700 bg-gray-900"
-                  : "border-gray-300"
-              }`}
-            >
-              {products.every((p) => selectedProducts.includes(p.id)) && (
-                <Check className="h-3 w-3 text-white" strokeWidth={3} />
-              )}
+      {!disableSelection && (
+        <button onClick={handleSelectAll} className="w-full text-left">
+          <div className="px-4 py-3 rounded-xl bg-white border border-gray-200">
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-[18px] h-[18px] border rounded flex items-center justify-center ${
+                  products.every((p) => selectedProducts.includes(p.id))
+                    ? "border-gray-700 bg-gray-900"
+                    : "border-gray-300"
+                }`}
+              >
+                {products.every((p) => selectedProducts.includes(p.id)) && (
+                  <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                )}
+              </div>
+              <span className="text-[15px] text-gray-700">
+                Select All Products
+              </span>
             </div>
-            <span className="text-[15px] text-gray-700">
-              Select All Products
-            </span>
           </div>
-        </div>
-      </button>
+        </button>
+      )}
 
       {/* Product List */}
       <div className="space-y-3">
         {products.map((product) => (
           <button
             key={product.id}
-            onClick={() => onSelect(product.id)}
-            className="w-full text-left"
+            onClick={() => !disableSelection && onSelect(product.id)}
+            className={`w-full text-left ${
+              disableSelection ? "pointer-events-none" : ""
+            }`}
           >
             <div className="px-4 py-3 rounded-xl bg-white border border-gray-200">
               <div className="flex items-start gap-4">

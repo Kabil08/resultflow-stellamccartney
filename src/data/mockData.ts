@@ -14,7 +14,7 @@ export const products: Record<string, Product[]> = {
       price: 1250.0,
       description: "Crafted with innovative plant-based suede",
       image:
-        "https://res.cloudinary.com/dbtapyfau/image/upload/v1761568083/processed-a9802cdbe1ac5e0085ea058dbeada7cfca92194564c686272f0953def1a53c7f-1747744618538_pdusgm.jpg",
+        "https://res.cloudinary.com/dbtapyfau/image/upload/v1761585504/ca71ac8152b658a523ff63f2792de0733f931e0c_7B0138WP05545742_X_nstaz3.jpg",
     },
     {
       id: "2",
