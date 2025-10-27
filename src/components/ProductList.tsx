@@ -1,5 +1,7 @@
-import { Check, PartyPopper } from "lucide-react";
-import { toast } from "sonner";
+import { Check } from "lucide-react";
+import toast from "react-hot-toast";
+import Confetti from "react-confetti";
+import { useState } from "react";
 
 interface Product {
   id: string;
@@ -24,6 +26,8 @@ export function ProductList({
   onSelect,
   selectedProducts,
 }: ProductListProps) {
+  const [showConfetti, setShowConfetti] = useState(false);
+
   // Calculate total savings
   const totalPrice = selectedProducts.reduce(
     (total, id) => total + products.find((p) => p.id === id)!.price,
@@ -44,76 +48,40 @@ export function ProductList({
   };
 
   const handleAddToCart = () => {
-    // Show confetti effect
-    const confetti = document.createElement("div");
-    confetti.className = "fixed inset-0 pointer-events-none z-[9999]";
-    document.body.appendChild(confetti);
-
-    // Add confetti animation
-    const emojis = ["🎉", "🎊", "✨"];
-    for (let i = 0; i < 30; i++) {
-      const emoji = document.createElement("span");
-      emoji.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-      emoji.style.position = "absolute";
-      emoji.style.left = Math.random() * 100 + "vw";
-      emoji.style.top = "-20px";
-      emoji.style.fontSize = "24px";
-      emoji.style.animation = `fall ${Math.random() * 2 + 1}s linear`;
-      confetti.appendChild(emoji);
-    }
-
-    // Add animation style
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes fall {
-        0% {
-          transform: translateY(0) rotate(0deg);
-          opacity: 1;
-        }
-        100% {
-          transform: translateY(100vh) rotate(360deg);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-
-    // Remove confetti after animation
-    setTimeout(() => {
-      document.body.removeChild(confetti);
-      document.head.removeChild(style);
-    }, 3000);
-
-    // Show toast
-    toast.custom(
-      (t) => (
-        <div className="bg-white rounded-lg shadow-lg p-4 flex items-center gap-3 relative z-[9999]">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-            <PartyPopper className="w-6 h-6 text-green-600" />
-          </div>
-          <div>
-            <p className="font-medium text-gray-900 text-[16px]">
-              Moved to cart! 🎉
-            </p>
-            <p className="text-[14px] text-gray-500">
-              Added {selectedProducts.length} item
-              {selectedProducts.length === 1 ? "" : "s"} to your cart
-            </p>
-          </div>
-        </div>
-      ),
+    // Show toast and confetti
+    toast.success(
+      `Added ${selectedProducts.length} item${
+        selectedProducts.length === 1 ? "" : "s"
+      } to cart!`,
       {
-        position: "top-center",
-        duration: 3000,
         style: {
-          zIndex: 99999,
+          background: "#111827",
+          color: "#fff",
+          borderRadius: "9999px",
         },
+        position: "bottom-center",
+        duration: 2000,
       }
     );
+
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
   };
 
   return (
     <div className="space-y-4">
+      {showConfetti && (
+        <div className="absolute inset-0 z-50 pointer-events-none">
+          <Confetti
+            width={window.innerWidth}
+            height={window.innerHeight}
+            recycle={false}
+            numberOfPieces={200}
+            gravity={0.3}
+          />
+        </div>
+      )}
+
       {/* Title Section */}
       <div className="mb-4">
         <h2 className="text-[17px] font-medium flex items-center gap-2 text-gray-700">

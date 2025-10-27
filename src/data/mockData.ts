@@ -1,6 +1,12 @@
-import { Product } from "../types/chat";
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+}
 
-export const products = {
+export const products: Record<string, Product[]> = {
   animalTextures: [
     {
       id: "1",
@@ -58,53 +64,22 @@ export const products = {
 };
 
 export const chatResponses = {
-  greeting: `Welcome to Stella McCartney—where luxury meets sustainability! 👋
-
-Would you like to explore our collections?
-
-• Cruelty-Free Animal Textures - Innovative alternatives to leather and exotic skins
-• Winter Warmers Collection - Cosy, responsibly sourced materials
-• The Cosy Edit - Sustainable winter essentials
-
-How can I assist you today?`,
-
+  greeting:
+    "Welcome to Stella McCartney—where luxury meets sustainability! 👋\n\nAre you exploring cruelty-free fashion for the first time? Would you like to learn about our animal-free materials and ethical commitments?",
+  sustainability:
+    "We never use animal leather or fur—instead, our textures are crafted from innovative, sustainable sources like mycelium-based snakeskin and plant-based suede.\n\nWould you like to see how our collections are made, or browse testimonials from shoppers passionate about ethical style?",
+  shopping:
+    "What are you shopping for today—cozy winter wear, handbags, or accessories?\n\nIf you have preferences (vegan leather, organic wool), I can recommend matching products.",
+  materials:
+    "✨ Our Innovative Materials:\n• Mycelium-based snakeskin\n• Plant-based suede\n• Organic cotton\n• Recycled polyester\n• Sustainable viscose",
   productDetails: {
-    animalTextures: `Our Cruelty-Free Animal Textures showcase revolutionary sustainable materials:
-
-• Mycelium-based snakeskin - A groundbreaking alternative to exotic leather
-• Plant-based suede - Luxuriously soft and environmentally conscious
-• Innovative vegan leather - Crafted without harming any creatures
-
-Select items to view:`,
-
-    winterWarmers: `Experience warmth with conscience in our Winter Warmers collection:
-
-• Responsibly sourced wool scarves
-• Recycled cashmere blends
-• Organic cotton accessories
-
-Each piece combines luxury with our commitment to sustainability.
-
-Available items:`,
-
-    cosyEdit: `The Cosy Edit: Where comfort meets conscious luxury:
-
-• Sustainable puffer coats with cruelty-free insulation
-• Organic cotton knitwear
-• Recycled material fleeces
-
-Browse our selection:`,
+    animalTextures:
+      "Discover our innovative cruelty-free textures:\n\n• Mycelium-based snakeskin - A groundbreaking alternative to exotic leather\n• Plant-based suede - Luxuriously soft and environmentally conscious",
+    winterWarmers:
+      "Experience warmth with conscience:\n\n• Responsibly sourced wool scarves\n• Recycled cashmere blends\n• Organic cotton accessories",
+    cosyEdit:
+      "Sustainable comfort for the season:\n\n• Cruelty-free puffer coats\n• Organic cotton knitwear\n• Recycled material fleeces",
   },
-
-  sustainability: `At Stella McCartney, we're revolutionizing luxury fashion through innovation and ethics:
-
-• Zero use of leather, fur, or animal skins
-• Pioneering sustainable materials
-• Ethical manufacturing practices
-• Commitment to circular fashion
-
-Would you like to explore our collections or learn more about our sustainability journey?`,
-
   collections: {
     winter:
       "Our Winter 2025 Collection features sustainable warmth and style, from cruelty-free wool coats to organic cotton knitwear.",
